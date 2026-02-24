@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from sphinx_needs import __version__ as sphinx_needs_version
+
 print ('sphinx-needs version: ' + str(sphinx_needs_version))
 
 sources_path = Path(__file__).parent.parent.joinpath("src")

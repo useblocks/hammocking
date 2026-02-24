@@ -87,10 +87,10 @@ check_poetry() {
     if ! command -v poetry &> /dev/null; then
         log_warn "Poetry not found. Installing..."
         curl -sSL https://install.python-poetry.org | python3 -
-        
+
         # Add poetry to PATH for current session
         export PATH="$HOME/.local/bin:$PATH"
-        
+
         if ! command -v poetry &> /dev/null; then
             log_error "Failed to install poetry"
             log_info "Please install poetry manually: https://python-poetry.org/docs/#installation"
@@ -105,43 +105,43 @@ check_poetry() {
 # Clean build artifacts
 clean_build() {
     log_info "Cleaning build artifacts..."
-    
+
     if [ -d ".venv" ]; then
         log_info "Removing virtual environment..."
         rm -rf .venv
     fi
-    
+
     if [ -d ".bootstrap" ]; then
         log_info "Removing bootstrap directory..."
         rm -rf .bootstrap
     fi
-    
+
     if [ -d "build" ]; then
         rm -rf build
     fi
-    
+
     if [ -d "out" ]; then
         rm -rf out
     fi
-    
+
     # Remove Python cache
     find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
     find . -type f -name "*.pyc" -delete 2>/dev/null || true
     find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
     find . -type d -name ".ruff_cache" -exec rm -rf {} + 2>/dev/null || true
-    
+
     log_success "Cleanup completed"
 }
 
 # Install dependencies
 install_dependencies() {
     log_info "Installing dependencies..."
-    
+
     check_poetry
-    
+
     # Install dependencies with poetry
     poetry install
-    
+
     log_success "Dependencies installed"
 }
 
@@ -174,47 +174,47 @@ build_docs() {
 main() {
     log_info "Starting build process..."
     echo ""
-    
+
     # Clean if requested
     if [ "$CLEAN" = true ]; then
         clean_build
         echo ""
     fi
-    
+
     # Install dependencies
     install_dependencies
     echo ""
-    
+
     # If install only, exit here
     if [ "$INSTALL_ONLY" = true ]; then
         log_success "Installation completed"
         exit 0
     fi
-    
+
     # Run build pipeline
     local failed=0
-    
+
     # Pre-commit checks
     if ! run_precommit; then
         failed=$((failed + 1))
         log_error "Pre-commit checks failed"
     fi
     echo ""
-    
+
     # Tests
     if ! run_tests; then
         failed=$((failed + 1))
         log_error "Tests failed"
     fi
     echo ""
-    
+
     # Documentation
     if ! build_docs; then
         failed=$((failed + 1))
         log_error "Documentation build failed"
     fi
     echo ""
-    
+
     # Final status
     if [ $failed -eq 0 ]; then
         log_success "===================================="
